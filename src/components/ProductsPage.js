@@ -4,10 +4,12 @@ import ProductsSearchInput from "@/components/ProductsSearchInput";
 import { useEffect, useState } from "react";
 import { fetchProducts } from "@/service";
 import { CircularProgress, Grid, Stack } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ProductsPage({ searchParams }) {
-  const { query } = searchParams;
+export default function ProductsPage({}) {
+  const searchParams = useSearchParams();
+
+  const query = searchParams.get("query");
   const router = useRouter();
   const [value, setValue] = useState(query);
   const [loading, setLoading] = useState(false);
@@ -19,11 +21,14 @@ export default function ProductsPage({ searchParams }) {
     router.push(`/products?query=${value}`);
   };
 
+  const handleDetail = async (id) => {
+    router.push(`/detail?query=${id}`);
+  };
+
   const handlePage = async (url) => {
     try {
       setLoading(true);
       const result = await fetchProducts(url, "page");
-      console.log(result);
       setProducts(result.products);
       setRoutePages(result.route_pages);
     } catch (err) {
@@ -39,7 +44,7 @@ export default function ProductsPage({ searchParams }) {
         setLoading(true);
         const result = await fetchProducts(query, "keyword");
 
-        setResultTitle(value);
+        setResultTitle(query);
         setProducts(result.products);
         setRoutePages(result.route_pages);
       } catch (err) {
@@ -69,7 +74,10 @@ export default function ProductsPage({ searchParams }) {
             <Grid className="mt-[3em]" container>
               {products.map((product, index) => (
                 <Grid xs={12} md={6} key={product.id}>
-                  <Stack className="h-[70px] text-color-grey_50 font-[500] text-[20px] hover:text-color-blue_80 cursor-pointer">
+                  <Stack
+                    onClick={() => handleDetail(product.id)}
+                    className="h-[70px] text-color-grey_50 font-[500] text-[20px] hover:text-color-blue_80 cursor-pointer"
+                  >
                     {product.title}
                   </Stack>
                 </Grid>

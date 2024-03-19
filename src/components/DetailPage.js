@@ -1,7 +1,11 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { fetchProductDetail, fetchProductAnalytics } from "@/service";
+import {
+  fetchProductDetail,
+  fetchProductAnalytics,
+  postProduct,
+} from "@/service";
 import {
   CircularProgress,
   Grid,
@@ -75,6 +79,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(false);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  const [isExist, setIsExist] = useState(true);
   const [productDetail, setProductDetail] = useState();
   const [productAnalytics, setProductAnalytics] = useState();
   const [expanded, setExpanded] = useState(false);
@@ -84,7 +89,16 @@ export default function ProductDetailPage() {
       try {
         setLoading(true);
         const res = await fetchProductDetail(query);
-        setProductDetail(res);
+
+        if (res.exist) {
+          // setProductDetail(res.data);
+          setProductDetail(res.data.product_info);
+          setProductAnalytics(res.data.product_analytics);
+        } else {
+          setProductDetail(res.data);
+          setIsExist(false);
+        }
+        // setProductDetail(res);
       } catch (err) {
         console.error(err);
         // setproductDetailTitle("");
@@ -110,13 +124,34 @@ export default function ProductDetailPage() {
       }
     };
 
-    if (productDetail) {
+    if (productDetail && !isExist) {
       fetchSearchProductAnalytics(productDetail.ingredients);
     }
-  }, [productDetail]);
+  }, [productDetail, isExist]);
 
-  console.log("info:", productDetail);
-  console.log("analytics:", productAnalytics);
+  useEffect(() => {
+    const createProduct = async (payload) => {
+      try {
+        const res = await postProduct(payload);
+
+        console.log(res);
+      } catch (err) {
+        console.error(err);
+        // setproductDetailTitle("");
+      }
+    };
+    if (productDetail && productAnalytics && !isExist) {
+      const payload = {
+        product_id: query,
+        title: productDetail.title,
+        product_info: productDetail,
+        product_analytics: productAnalytics,
+      };
+
+      createProduct(payload);
+    }
+  }, [productAnalytics, productDetail, isExist]);
+
   return (
     <div className="flex items-center flex-col mt-[4em]">
       {loading && <CircularProgress className="mt-[8em]" size={120} />}

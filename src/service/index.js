@@ -25,7 +25,7 @@ export const fetchProducts = async (keyword, type) => {
 export const fetchProductDetail = async (id) => {
   try {
     const response = await client.get(`/dev/detail?query=${id}`);
-    return response.data.data;
+    return response.data;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -35,6 +35,15 @@ export const fetchProductAnalytics = async (ingredients) => {
   try {
     const response = await client.get(`/dev/analytics?query=${ingredients}`);
     return response.data.data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const postProduct = async (payload) => {
+  try {
+    const response = await client.post(`/dev/detail`, payload);
+    return response;
   } catch (error) {
     throw new Error(error.message);
   }
